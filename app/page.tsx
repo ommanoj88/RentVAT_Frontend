@@ -1,11 +1,14 @@
+import Logo from "./components/Logo";
 import CategoryList from "./components/Categorylist";
 import SearchBar from "./components/Searchbar";
 import ListingCard from "./components/Listingcard";
+import Footer from "./components/Footer";
+import WhyRentingIsBest from "./components/WhyRentingIsBest";
+import SafeAndSecure from "./components/HowItWorks";
 import { ListingsResponse } from "./types/Listings";
 
 const API_URL = "http://localhost:8080/api/search/listings?page=0&size=10";
 
-// Temporary userId (Replace with actual user authentication logic)
 const userId = 1; // Example user ID
 
 async function fetchListings(): Promise<ListingsResponse> {
@@ -17,15 +20,42 @@ export default async function Home() {
   const listings = await fetchListings();
 
   return (
-    <main className="max-w-6xl mx-auto p-6">
-      <SearchBar />
-      <CategoryList />
-      <h1 className="text-2xl font-bold mt-6">Recently Added Listings</h1>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-        {listings.content.map((listing) => (
-          <ListingCard key={listing.id} listing={listing} userId={userId} />
-        ))}
+    <main className="bg-cream min-h-screen flex flex-col">
+      {/* Header with Logo */}
+      <header className="bg-green-700 text-white py-6 px-6 shadow-md flex justify-center items-center">
+        <div className="w-48">
+          <Logo />
+        </div>
+      </header>
+
+      {/* Content */}
+      <div className="flex-grow w-full p-6">
+        <SearchBar />
+        <CategoryList />
+
+        {/* Full-width Recently Added Listings Header */}
+        <h1 className="text-2xl font-bold mt-6 text-green-900 w-full px-6">
+          Recently Added Listings
+        </h1>
+
+        {/* Scrollable Listings Section (Full Width) */}
+        <div className="w-full overflow-x-auto scrollbar-hide mt-4 px-6">
+          <div className="flex space-x-4 w-max">
+            {listings.content.map((listing) => (
+              <div key={listing.id} className="w-80 inline-block">
+                <ListingCard listing={listing} userId={userId} />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
+
+      {/* New Sections */}
+      <WhyRentingIsBest />
+      <SafeAndSecure />
+
+      {/* Footer */}
+      <Footer />
     </main>
   );
 }
