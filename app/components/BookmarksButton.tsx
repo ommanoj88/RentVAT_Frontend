@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { addBookmark, getBookmarkedListings } from "../services/bookmarkservice";
+import { Bookmark, BookmarkCheck } from "lucide-react";
 
 interface BookmarkButtonProps {
   userId: number;
@@ -11,7 +12,6 @@ interface BookmarkButtonProps {
 const BookmarkButton: React.FC<BookmarkButtonProps> = ({ userId, listingId }) => {
   const [bookmarked, setBookmarked] = useState(false);
 
-  // Check if the listing is already bookmarked
   useEffect(() => {
     const fetchBookmarks = async () => {
       const bookmarks = await getBookmarkedListings(userId);
@@ -32,10 +32,12 @@ const BookmarkButton: React.FC<BookmarkButtonProps> = ({ userId, listingId }) =>
   return (
     <button
       onClick={handleBookmark}
-      className={`px-4 py-2 text-white ${bookmarked ? "bg-gray-500" : "bg-blue-500"} rounded`}
+      className={`p-3 rounded-full shadow-md transition-all ${
+        bookmarked ? "bg-amber-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+      }`}
       disabled={bookmarked}
     >
-      {bookmarked ? "Bookmarked" : "Bookmark"}
+      {bookmarked ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
     </button>
   );
 };
