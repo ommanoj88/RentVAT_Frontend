@@ -1,6 +1,7 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import Logo from "../components/Logo"; // Import the Logo component
 
 type SearchHeroSectionProps = {
   query: string;
@@ -26,6 +27,11 @@ export default function SearchHeroSection({ query, setQuery, setPage }: SearchHe
 
   return (
     <div className="relative bg-gradient-to-r from-gray-800 via-gray-700 to-gray-600 text-white min-h-[40vh] flex flex-col justify-center items-center text-center px-6">
+      {/* Logo at Top-Left */}
+      <div className="absolute top-4 left-4 cursor-pointer" onClick={() => router.push("/")}>
+        <Logo />
+      </div>
+
       <h1 className="text-3xl sm:text-4xl font-extrabold">Find What You Need, When You Need It!</h1>
       <p className="text-base sm:text-lg mt-3 opacity-80">Browse thousands of rentals at your fingertips.</p>
       

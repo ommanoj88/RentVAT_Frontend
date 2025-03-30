@@ -8,16 +8,14 @@ import SearchHeroSection from "../components/SearchHeroSection";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const categories = [
-  "Electronics", "Furniture", "Vehicles", "Clothing", "Books", "Sports", "Tools", "Miscellaneous"
-];
-
 export default function SearchPage() {
   const searchParams = useSearchParams();
+  
   const initialQuery = searchParams.get("query") || "";
+  const initialCategory = searchParams.get("category") || "";
 
   const [query, setQuery] = useState(initialQuery);
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState(initialCategory);
   const [city, setCity] = useState("");
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(1000000);
@@ -53,28 +51,69 @@ export default function SearchPage() {
 
   return (
     <div className="w-full">
-      {/* Use only Hero Section Search Bar */}
+      {/* Hero Section with Search Bar */}
       <SearchHeroSection query={query} setQuery={setQuery} setPage={setPage} />
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Filters */}
         <div className="mt-6 flex flex-wrap gap-4 items-center">
-          <select onChange={(e) => { setCategory(e.target.value); setPage(0); }} className="border p-2 rounded-lg">
+          <select
+            value={category}
+            onChange={(e) => { setCategory(e.target.value); setPage(0); }}
+            className="border p-2 rounded-lg"
+          >
             <option value="">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
+            <option value="ELECTRONICS">Electronics</option>
+            <option value="VEHICLES">Vehicles</option>
+            <option value="HOME_APPLIANCES">Home Appliances</option>
+            <option value="SPORTS">Sports</option>
+            <option value="TOOLS">Tools</option>
+            <option value="CLOTHING">Clothing</option>
+
           </select>
-          <input type="text" placeholder="City" className="border p-2 rounded-lg" onChange={(e) => { setCity(e.target.value); setPage(0); }} />
-          <input type="number" placeholder="Min Price" className="border p-2 rounded-lg" onChange={(e) => { setMinPrice(Number(e.target.value)); setPage(0); }} />
-          <input type="number" placeholder="Max Price" className="border p-2 rounded-lg" onChange={(e) => { setMaxPrice(Number(e.target.value)); setPage(0); }} />
-          <label><input type="checkbox" checked={rent} onChange={() => { setRent(!rent); setPage(0); }} /> Rent</label>
-          <label><input type="checkbox" checked={sale} onChange={() => { setSale(!sale); setPage(0); }} /> Sale</label>
-          <select onChange={(e) => { setSortBy(e.target.value); setPage(0); }} className="border p-2 rounded-lg">
+          <input
+            type="text"
+            placeholder="City"
+            className="border p-2 rounded-lg"
+            onChange={(e) => { setCity(e.target.value); setPage(0); }}
+          />
+          <input
+            type="number"
+            placeholder="Min Price"
+            className="border p-2 rounded-lg"
+            onChange={(e) => { setMinPrice(Number(e.target.value)); setPage(0); }}
+          />
+          <input
+            type="number"
+            placeholder="Max Price"
+            className="border p-2 rounded-lg"
+            onChange={(e) => { setMaxPrice(Number(e.target.value)); setPage(0); }}
+          />
+          <label>
+            <input
+              type="checkbox"
+              checked={rent}
+              onChange={() => { setRent(!rent); setPage(0); }}
+            /> Rent
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={sale}
+              onChange={() => { setSale(!sale); setPage(0); }}
+            /> Sale
+          </label>
+          <select
+            onChange={(e) => { setSortBy(e.target.value); setPage(0); }}
+            className="border p-2 rounded-lg"
+          >
             <option value="createdAt">Newest</option>
             <option value="price">Price</option>
           </select>
-          <select onChange={(e) => { setSortDirection(e.target.value); setPage(0); }} className="border p-2 rounded-lg">
+          <select
+            onChange={(e) => { setSortDirection(e.target.value); setPage(0); }}
+            className="border p-2 rounded-lg"
+          >
             <option value="desc">Descending</option>
             <option value="asc">Ascending</option>
           </select>
@@ -91,9 +130,21 @@ export default function SearchPage() {
 
         {/* Pagination Controls */}
         <div className="flex justify-center items-center gap-4 mt-8">
-          <button className="px-4 py-2 bg-gray-300 rounded-lg disabled:opacity-50" onClick={() => setPage(page - 1)} disabled={page === 0}>Previous</button>
+          <button
+            className="px-4 py-2 bg-gray-300 rounded-lg disabled:opacity-50"
+            onClick={() => setPage(page - 1)}
+            disabled={page === 0}
+          >
+            Previous
+          </button>
           <span>Page {page + 1} of {totalPages}</span>
-          <button className="px-4 py-2 bg-gray-300 rounded-lg disabled:opacity-50" onClick={() => setPage(page + 1)} disabled={page + 1 >= totalPages}>Next</button>
+          <button
+            className="px-4 py-2 bg-gray-300 rounded-lg disabled:opacity-50"
+            onClick={() => setPage(page + 1)}
+            disabled={page + 1 >= totalPages}
+          >
+            Next
+          </button>
         </div>
       </div>
 
