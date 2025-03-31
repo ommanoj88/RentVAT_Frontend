@@ -26,6 +26,7 @@ export default function SearchPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [showFilters, setShowFilters] = useState(false);
 
   const userId = 1;
 
@@ -55,68 +56,79 @@ export default function SearchPage() {
       <SearchHeroSection query={query} setQuery={setQuery} setPage={setPage} />
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Filters */}
-        <div className="mt-6 flex flex-wrap gap-4 items-center">
-          <select
-            value={category}
-            onChange={(e) => { setCategory(e.target.value); setPage(0); }}
-            className="border p-2 rounded-lg"
-          >
-            <option value="">All Categories</option>
-            <option value="ELECTRONICS">Electronics</option>
-            <option value="VEHICLES">Vehicles</option>
-            <option value="HOME_APPLIANCES">Home Appliances</option>
-            <option value="SPORTS">Sports</option>
-            <option value="TOOLS">Tools</option>
-            <option value="CLOTHING">Clothing</option>
+        {/* Toggle Filters Button */}
+        <button
+          className="bg-gray-700 text-white px-4 py-2 rounded-lg mb-4"
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          {showFilters ? "Hide Filters" : "Show Filters"}
+        </button>
 
-          </select>
-          <input
-            type="text"
-            placeholder="City"
-            className="border p-2 rounded-lg"
-            onChange={(e) => { setCity(e.target.value); setPage(0); }}
-          />
-          <input
-            type="number"
-            placeholder="Min Price"
-            className="border p-2 rounded-lg"
-            onChange={(e) => { setMinPrice(Number(e.target.value)); setPage(0); }}
-          />
-          <input
-            type="number"
-            placeholder="Max Price"
-            className="border p-2 rounded-lg"
-            onChange={(e) => { setMaxPrice(Number(e.target.value)); setPage(0); }}
-          />
-          <label>
+        {/* Filters Section - Animated */}
+        <div
+          className={`transition-all duration-300 ease-in-out ${showFilters ? "max-h-screen opacity-100" : "max-h-0 opacity-0 overflow-hidden"}`}
+        >
+          <div className="mt-6 flex flex-wrap gap-4 items-center">
+            <select
+              value={category}
+              onChange={(e) => { setCategory(e.target.value); setPage(0); }}
+              className="border p-2 rounded-lg"
+            >
+              <option value="">All Categories</option>
+              <option value="ELECTRONICS">Electronics</option>
+              <option value="VEHICLES">Vehicles</option>
+              <option value="HOME_APPLIANCES">Home Appliances</option>
+              <option value="SPORTS">Sports</option>
+              <option value="TOOLS">Tools</option>
+              <option value="CLOTHING">Clothing</option>
+            </select>
             <input
-              type="checkbox"
-              checked={rent}
-              onChange={() => { setRent(!rent); setPage(0); }}
-            /> Rent
-          </label>
-          <label>
+              type="text"
+              placeholder="City"
+              className="border p-2 rounded-lg"
+              onChange={(e) => { setCity(e.target.value); setPage(0); }}
+            />
             <input
-              type="checkbox"
-              checked={sale}
-              onChange={() => { setSale(!sale); setPage(0); }}
-            /> Sale
-          </label>
-          <select
-            onChange={(e) => { setSortBy(e.target.value); setPage(0); }}
-            className="border p-2 rounded-lg"
-          >
-            <option value="createdAt">Newest</option>
-            <option value="price">Price</option>
-          </select>
-          <select
-            onChange={(e) => { setSortDirection(e.target.value); setPage(0); }}
-            className="border p-2 rounded-lg"
-          >
-            <option value="desc">Descending</option>
-            <option value="asc">Ascending</option>
-          </select>
+              type="number"
+              placeholder="Min Price"
+              className="border p-2 rounded-lg"
+              onChange={(e) => { setMinPrice(Number(e.target.value)); setPage(0); }}
+            />
+            <input
+              type="number"
+              placeholder="Max Price"
+              className="border p-2 rounded-lg"
+              onChange={(e) => { setMaxPrice(Number(e.target.value)); setPage(0); }}
+            />
+            <label>
+              <input
+                type="checkbox"
+                checked={rent}
+                onChange={() => { setRent(!rent); setPage(0); }}
+              /> Rent
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={sale}
+                onChange={() => { setSale(!sale); setPage(0); }}
+              /> Sale
+            </label>
+            <select
+              onChange={(e) => { setSortBy(e.target.value); setPage(0); }}
+              className="border p-2 rounded-lg"
+            >
+              <option value="createdAt">Newest</option>
+              <option value="price">Price</option>
+            </select>
+            <select
+              onChange={(e) => { setSortDirection(e.target.value); setPage(0); }}
+              className="border p-2 rounded-lg"
+            >
+              <option value="desc">Descending</option>
+              <option value="asc">Ascending</option>
+            </select>
+          </div>
         </div>
 
         {/* Listings */}

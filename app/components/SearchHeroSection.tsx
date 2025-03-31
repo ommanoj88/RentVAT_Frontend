@@ -26,17 +26,14 @@ export default function SearchHeroSection({ query, setQuery, setPage }: SearchHe
   };
 
   return (
-    <div className="relative bg-gradient-to-r from-gray-800 via-gray-700 to-gray-600 text-white min-h-[40vh] flex flex-col justify-center items-center text-center px-6">
-      {/* Logo at Top-Left */}
-      <div className="absolute top-4 left-4 cursor-pointer" onClick={() => router.push("/")}>
+    <div className="relative bg-gray-800 text-white py-6 flex flex-col items-center justify-center px-4">
+      {/* Logo at the Top */}
+      <div className="mb-4 cursor-pointer scale-75 sm:scale-100" onClick={() => router.push("/")}>
         <Logo />
       </div>
 
-      <h1 className="text-3xl sm:text-4xl font-extrabold">Find What You Need, When You Need It!</h1>
-      <p className="text-base sm:text-lg mt-3 opacity-80">Browse thousands of rentals at your fingertips.</p>
-      
-      {/* Search Bar */}
-      <div className="bg-white text-gray-700 w-full max-w-xl mt-6 flex items-center rounded-full shadow-lg overflow-hidden border border-gray-300">
+      {/* Search Bar (Same as Before) */}
+      <div className="bg-white text-gray-700 w-full max-w-xl mt-4 flex items-center rounded-full shadow-lg overflow-hidden border border-gray-300">
         <input
           type="text"
           placeholder="Search for rentals..."
