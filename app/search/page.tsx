@@ -132,13 +132,13 @@ export default function SearchPage() {
         </div>
 
         {/* Listings */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-8">
-          {listings.length > 0 ? (
-            listings.map((listing) => <ListingCard key={listing.id} listing={listing} userId={userId} />)
-          ) : (
-            <p className="text-center text-gray-500 col-span-3">No listings found.</p>
-          )}
-        </div>
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-8">
+  {listings.length > 0 ? (
+    listings.map((listing) => <ListingCard key={listing.id} listing={listing} />)
+  ) : (
+    <p className="text-center text-gray-500 col-span-3">No listings found.</p>
+  )}
+</div>
 
         {/* Pagination Controls */}
         <div className="flex justify-center items-center gap-4 mt-8">
