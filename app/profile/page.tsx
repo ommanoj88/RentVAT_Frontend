@@ -7,13 +7,19 @@ import Logo from "../components/Logo";
 import Footer from "../components/Footer";
 import ListingCard from "../components/Listingcard";
 import { ListingsResponse } from "../types/Listings";
+import Navigation from "../profilepagecomponents/Navigation";
+import ProfileTab from "../profilepagecomponents/ProfileTab";
+import SettingsTab from "../profilepagecomponents/SettingsTab";
+import MyListingsTab from "../profilepagecomponents/MyListingsTab";
+import { ListingProfilePage } from "../types/Listings";
+import { FiUser, FiGrid, FiShoppingBag, FiSettings, FiEdit2, FiChevronRight, FiCamera, FiStar, FiMapPin, FiCalendar, FiMail, FiPhone } from "react-icons/fi";
 
 export default function UserProfile() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
   const [isEditing, setIsEditing] = useState(false);
-  const [userListings, setUserListings] = useState<ListingsResponse | null>(null);
+  const [userListings, setUserListings] = useState<ListingProfilePage[] | null>(null);
   const [rentedItems, setRentedItems] = useState<ListingsResponse | null>(null);
   const [profileData, setProfileData] = useState({
     displayName: user?.displayName || "",
@@ -22,35 +28,43 @@ export default function UserProfile() {
     address: "",
     bio: ""
   });
+  
+  const [loading, setLoading] = useState(true);
+  const currentDate = "2025-04-12"; // Using the date from user's message
 
   useEffect(() => {
-    // Redirect if not logged in
     if (!user) {
-      
+      // router.push("/login");
       return;
     }
-
+  
+    setLoading(true);
+    
     // Fetch user's listings
-    fetch(`http://localhost:8080/api/listings/user/${user.uid}`, { cache: "no-store" })
-      .then((res) => res.json())
-      .then(setUserListings)
-      .catch(error => console.error("Error fetching user listings:", error));
-
+    fetch(`http://localhost:8080/api/listings/user/3`, { cache: "no-store" })
+    .then((res) => res.json())
+    .then((data) => {
+      console.log("User Listings Response:", data);
+      setUserListings(data);
+    })
+    .catch((error) => console.error("Error fetching user listings:", error))
+    .finally(() => setLoading(false));
+  
     // Fetch items the user is renting
-    fetch(`http://localhost:8080/api/rentals/user/${user.uid}`, { cache: "no-store" })
+    fetch(`http://localhost:8080/api/listings/user/3`, { cache: "no-store" })
       .then((res) => res.json())
-      .then(setRentedItems)
-      .catch(error => console.error("Error fetching rented items:", error));
-
-    // You would typically fetch additional user profile data here
-    // For now we're just using what's in the auth object
-    if (user) {
-      setProfileData(prev => ({
-        ...prev,
-        displayName: user.displayName || "",
-        email: user.email || ""
-      }));
-    }
+      .then((data) => {
+        console.log("Rented Items Response:", data);
+        setRentedItems(data.content);
+      })
+      .catch((error) => console.error("Error fetching rented items:", error));
+  
+    // Update profile data
+    setProfileData((prev) => ({
+      ...prev,
+      displayName: user.displayName || "",
+      email: user.email || "",
+    }));
   }, [user, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -78,276 +92,246 @@ export default function UserProfile() {
   };
 
   if (!user) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen bg-white">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="h-16 w-16 bg-gray-200 rounded-full mb-4"></div>
+          <div className="h-4 w-32 bg-gray-200 rounded mb-3"></div>
+          <div className="h-3 w-24 bg-gray-100 rounded"></div>
+        </div>
+      </div>
+    );
   }
 
-  return (
-    <div className="bg-cream min-h-screen flex flex-col">
-      {/* Navigation */}
-      <nav className="bg-gradient-to-r from-gray-700 via-gray-600 to-gray-500 text-white p-4 sm:px-6 sm:py-5 flex justify-between items-center">
-        <Logo />
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={() => router.push("/")}
-            className="hover:text-gray-300 transition text-sm sm:text-base"
-          >
-            Home
-          </button>
-          <button
-            onClick={() => router.push("/createlisting")}
-            className="bg-gray-400 hover:bg-gray-500 px-4 py-2 rounded-full text-black font-bold transition text-sm sm:text-base"
-          >
-            + List an Item
-          </button>
-          <button
-            onClick={handleLogout}
-            className="hover:text-gray-300 transition text-sm sm:text-base"
-          >
-            Logout
-          </button>
-        </div>
-      </nav>
+  // Calculate stats for the hero section
+  const stats = [
+    { label: "Listings", value: userListings?.length || 0 },
+    { label: "Rentals", value: rentedItems?.length || 0 },
+    { label: "Rating", value: "4.9", icon: <FiStar className="text-yellow-400" /> }
+  ];
 
-      <div className="flex-grow container mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {/* Profile Header */}
-          <div className="bg-gradient-to-r from-gray-600 to-gray-500 text-white p-6">
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="w-24 h-24 bg-gray-300 text-gray-700 flex items-center justify-center rounded-full font-bold text-4xl">
-                {user.displayName?.charAt(0) || user.email?.charAt(0) || "U"}
+  return (
+    <div className="bg-gray-50 min-h-screen flex flex-col">
+      {/* Navigation */}
+      <Navigation />
+
+      {/* Hero Section */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="container mx-auto max-w-6xl px-4">
+          <div className="py-8 md:py-16">
+            <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-center">
+              {/* Profile Photo Section */}
+              <div className="relative">
+                <div className="w-36 h-36 md:w-44 md:h-44 rounded-full bg-gradient-to-r from-blue-50 to-indigo-50 flex items-center justify-center border-4 border-white shadow-lg">
+                  <div className="w-32 h-32 md:w-40 md:h-40 bg-blue-50 text-blue-600 flex items-center justify-center rounded-full font-bold text-4xl md:text-5xl relative overflow-hidden">
+                    {user.displayName?.charAt(0) || user.email?.charAt(0) || "U"}
+                  </div>
+                </div>
+                <button className="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow-md border border-gray-100 text-blue-500 hover:text-blue-600 transition-colors">
+                  <FiCamera size={20} />
+                </button>
               </div>
+
+              {/* Profile Info Section */}
               <div className="flex-grow text-center md:text-left">
-                <h1 className="text-2xl font-bold">{user.displayName || user.email || "User"}</h1>
-                <p className="opacity-80">Member since {new Date(user.metadata.creationTime || Date.now()).toLocaleDateString()}</p>
+                <div className="flex flex-col md:flex-row items-center md:items-start justify-between w-full mb-4">
+                  <div>
+                    <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-1">
+                      {user.displayName || "ommanoj88"}
+                    </h1>
+                    <div className="flex items-center justify-center md:justify-start gap-2 text-gray-500">
+                      <FiMapPin size={16} />
+                      <span>San Francisco, CA</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 md:mt-0">
+                    <button 
+                      onClick={() => setIsEditing(true)}
+                      className="px-5 py-2.5 bg-blue-600 text-white rounded-lg shadow-sm hover:bg-blue-700 transition-colors text-sm font-medium flex items-center gap-2"
+                    >
+                      <FiEdit2 size={16} />
+                      Edit Profile
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="flex flex-wrap gap-3 mb-4 justify-center md:justify-start">
+                  <span className="px-3 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-full flex items-center gap-1">
+                    <FiCalendar size={12} />
+                    Joined {new Date(user.metadata.creationTime || Date.now()).toLocaleDateString()}
+                  </span>
+                  <span className="px-3 py-1 bg-green-50 text-green-600 text-xs font-medium rounded-full flex items-center gap-1">
+                    <FiStar size={12} />
+                    Verified User
+                  </span>
+                  <span className="px-3 py-1 bg-purple-50 text-purple-600 text-xs font-medium rounded-full flex items-center gap-1">
+                    <FiUser size={12} />
+                    Premium Member
+                  </span>
+                </div>
+
+                <div className="hidden md:flex mb-4 space-x-4">
+                  <div className="flex items-center gap-1 text-sm text-gray-600">
+                    <FiMail className="text-gray-400" size={16} />
+                    <span>{user.email || "user@example.com"}</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-sm text-gray-600">
+                    <FiPhone className="text-gray-400" size={16} />
+                    <span>+1 (555) 123-4567</span>
+                  </div>
+                </div>
+                
+                {/* Stats Section */}
+                <div className="grid grid-cols-3 gap-4 max-w-md mx-auto md:mx-0 mt-4 md:mt-2">
+                  {stats.map((stat, index) => (
+                    <div key={index} className="bg-gray-50 rounded-lg py-3 px-2 text-center">
+                      <div className="flex items-center justify-center gap-1 mb-1">
+                        <span className="text-xl font-bold text-gray-800">{stat.value}</span>
+                        {stat.icon}
+                      </div>
+                      <p className="text-xs text-gray-500">{stat.label}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
+      <div className="flex-grow container mx-auto p-4 md:p-6 max-w-6xl">
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
           {/* Tab Navigation */}
-          <div className="flex border-b">
+          <div className="flex overflow-x-auto scrollbar-hide bg-white border-b border-gray-100">
             <button 
               onClick={() => setActiveTab("profile")}
-              className={`px-6 py-3 text-gray-700 ${activeTab === "profile" ? "border-b-2 border-gray-700 font-semibold" : ""}`}
+              className={`px-6 py-4 flex items-center gap-2 text-sm font-medium transition-colors ${
+                activeTab === "profile" 
+                  ? "text-blue-600 border-b-2 border-blue-600" 
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
             >
-              Profile
+              <FiUser size={18} />
+              <span>Profile</span>
             </button>
             <button 
               onClick={() => setActiveTab("listings")}
-              className={`px-6 py-3 text-gray-700 ${activeTab === "listings" ? "border-b-2 border-gray-700 font-semibold" : ""}`}
+              className={`px-6 py-4 flex items-center gap-2 text-sm font-medium transition-colors ${
+                activeTab === "listings" 
+                  ? "text-blue-600 border-b-2 border-blue-600" 
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
             >
-              My Listings
+              <FiGrid size={18} />
+              <span>My Listings</span>
             </button>
             <button 
               onClick={() => setActiveTab("rentals")}
-              className={`px-6 py-3 text-gray-700 ${activeTab === "rentals" ? "border-b-2 border-gray-700 font-semibold" : ""}`}
+              className={`px-6 py-4 flex items-center gap-2 text-sm font-medium transition-colors ${
+                activeTab === "rentals" 
+                  ? "text-blue-600 border-b-2 border-blue-600" 
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
             >
-              Items I'm Renting
+              <FiShoppingBag size={18} />
+              <span>Items I'm Renting</span>
             </button>
             <button 
               onClick={() => setActiveTab("settings")}
-              className={`px-6 py-3 text-gray-700 ${activeTab === "settings" ? "border-b-2 border-gray-700 font-semibold" : ""}`}
+              className={`px-6 py-4 flex items-center gap-2 text-sm font-medium transition-colors ${
+                activeTab === "settings" 
+                  ? "text-blue-600 border-b-2 border-blue-600" 
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
             >
-              Settings
+              <FiSettings size={18} />
+              <span>Settings</span>
             </button>
           </div>
 
           {/* Tab Content */}
-          <div className="p-6">
-            {/* Profile Tab */}
+          <div className="p-6 md:p-8 bg-white min-h-[500px]">
             {activeTab === "profile" && (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-700">Profile Information</h2>
-                  <button 
-                    onClick={() => setIsEditing(!isEditing)}
-                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-full font-medium transition"
-                  >
-                    {isEditing ? "Cancel" : "Edit Profile"}
-                  </button>
-                </div>
-                
-                {isEditing ? (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-gray-700 mb-1">Name</label>
-                      <input
-                        type="text"
-                        name="displayName"
-                        value={profileData.displayName}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-300 rounded"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 mb-1">Email</label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={profileData.email}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-300 rounded bg-gray-100"
-                        disabled
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 mb-1">Phone</label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={profileData.phone}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-300 rounded"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 mb-1">Address</label>
-                      <input
-                        type="text"
-                        name="address"
-                        value={profileData.address}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-300 rounded"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-gray-700 mb-1">Bio</label>
-                      <textarea
-                        name="bio"
-                        value={profileData.bio}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-300 rounded h-32"
-                      />
-                    </div>
-                    <button 
-                      onClick={handleProfileUpdate}
-                      className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-full font-medium transition"
-                    >
-                      Save Changes
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-gray-600 font-medium">Name</h3>
-                      <p className="text-gray-800">{profileData.displayName || "-"}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-gray-600 font-medium">Email</h3>
-                      <p className="text-gray-800">{profileData.email}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-gray-600 font-medium">Phone</h3>
-                      <p className="text-gray-800">{profileData.phone || "-"}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-gray-600 font-medium">Address</h3>
-                      <p className="text-gray-800">{profileData.address || "-"}</p>
-                    </div>
-                    <div>
-                      <h3 className="text-gray-600 font-medium">Bio</h3>
-                      <p className="text-gray-800">{profileData.bio || "-"}</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="mt-8">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-4">Recent Activity</h3>
-                  <div className="border rounded-lg divide-y">
-                    <div className="p-4 flex items-center text-gray-700">
-                      <div className="mr-4">📦</div>
-                      <div>
-                        <p>You listed a new item</p>
-                        <p className="text-sm text-gray-500">Yesterday</p>
-                      </div>
-                    </div>
-                    <div className="p-4 flex items-center text-gray-700">
-                      <div className="mr-4">🔍</div>
-                      <div>
-                        <p>You searched for "Camera equipment"</p>
-                        <p className="text-sm text-gray-500">3 days ago</p>
-                      </div>
-                    </div>
-                    <div className="p-4 flex items-center text-gray-700">
-                      <div className="mr-4">👤</div>
-                      <div>
-                        <p>You updated your profile</p>
-                        <p className="text-sm text-gray-500">1 week ago</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <ProfileTab
+                isEditing={isEditing}
+                profileData={profileData}
+                setIsEditing={setIsEditing}
+                handleInputChange={handleInputChange}
+                handleProfileUpdate={handleProfileUpdate}
+              />
             )}
 
             {/* My Listings Tab */}
             {activeTab === "listings" && (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-700">My Listings</h2>
-                  <button 
-                    onClick={() => router.push("/createlisting")}
-                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-full font-medium transition"
+              loading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 animate-pulse">
+                      <div className="h-48 bg-gray-200"></div>
+                      <div className="p-4">
+                        <div className="h-5 bg-gray-200 rounded w-3/4 mb-3"></div>
+                        <div className="h-4 bg-gray-100 rounded w-1/2 mb-2"></div>
+                        <div className="h-4 bg-gray-100 rounded w-2/3"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : userListings ? (
+                <MyListingsTab userListings={userListings} />
+              ) : (
+                <div className="text-center py-16 flex flex-col items-center">
+                  <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                    <FiGrid className="text-blue-500" size={24} />
+                  </div>
+                  <p className="text-gray-600 mb-4">You don't have any listings yet</p>
+                  <button
+                    onClick={() => router.push("/create-listing")}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-medium transition-colors inline-flex items-center gap-2"
                   >
-                    Add New Listing
+                    Create Your First Listing
+                    <FiChevronRight />
                   </button>
                 </div>
-                
-                {userListings?.content?.length ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {userListings.content.map((listing) => (
-                      <div key={listing.id}>
-                        <ListingCard listing={listing} />
-                        <div className="mt-2 flex justify-end space-x-2">
-                          <button className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm">
-                            Edit
-                          </button>
-                          <button className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded text-sm">
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <p className="text-gray-600 mb-4">You haven't listed any items yet</p>
-                    <button
-                      onClick={() => router.push("/createlisting")}
-                      className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-full font-medium transition"
-                    >
-                      Create Your First Listing
-                    </button>
-                  </div>
-                )}
-              </div>
+              )
             )}
 
             {/* Rentals Tab */}
             {activeTab === "rentals" && (
               <div>
-                <h2 className="text-xl font-semibold text-gray-700 mb-6">Items I'm Renting</h2>
+                <h2 className="text-xl font-semibold text-gray-800 mb-6">Items I'm Renting</h2>
                 
-                {rentedItems?.content?.length ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {rentedItems.content.map((listing) => (
-                      <div key={listing.id}>
-                        <ListingCard listing={listing} />
-                        <div className="mt-2 bg-gray-50 p-3 rounded border">
-                          <p className="text-sm font-medium">Rental Period:</p>
-                          <p className="text-sm text-gray-600">Apr 10 - Apr 17, 2025</p>
+                {rentedItems?.length ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {rentedItems?.map((listing: ListingProfilePage) => (
+                      <div key={listing.id} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 transition-shadow hover:shadow-md">
+                      <div>
+                        <ListingCard listing={{ ...listing, price: listing.price || 0, photoUrl: listing.photoUrl || "" }} />
+                      </div>
+                      <div className="p-4 bg-blue-50 border-t border-blue-100">
+                        <p className="text-sm font-medium text-blue-800">Rental Period</p>
+                        <div className="flex items-center justify-between mt-1">
+                        <p className="text-sm text-blue-700">Apr 10 - Apr 17, 2025</p>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Active
+                        </span>
                         </div>
                       </div>
+                      </div>
                     ))}
-                  </div>
+                    </div>
                 ) : (
-                  <div className="text-center py-12">
+                  <div className="text-center py-16 flex flex-col items-center">
+                    <div className="w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                      <FiShoppingBag className="text-blue-500" size={24} />
+                    </div>
                     <p className="text-gray-600 mb-4">You're not currently renting any items</p>
                     <button
                       onClick={() => router.push("/")}
-                      className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-full font-medium transition"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-medium transition-colors inline-flex items-center gap-2"
                     >
                       Explore Items to Rent
+                      <FiChevronRight />
                     </button>
                   </div>
                 )}
@@ -355,78 +339,19 @@ export default function UserProfile() {
             )}
 
             {/* Settings Tab */}
-            {activeTab === "settings" && (
-              <div>
-                <h2 className="text-xl font-semibold text-gray-700 mb-6">Account Settings</h2>
-                
-                <div className="space-y-6">
-                  <div className="border rounded-lg p-4">
-                    <h3 className="font-medium text-gray-700 mb-3">Notifications</h3>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-gray-600">Email notifications</label>
-                        <label className="switch">
-                          <input type="checkbox" defaultChecked />
-                          <span className="slider"></span>
-                        </label>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <label className="text-gray-600">SMS notifications</label>
-                        <label className="switch">
-                          <input type="checkbox" />
-                          <span className="slider"></span>
-                        </label>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <label className="text-gray-600">Marketing emails</label>
-                        <label className="switch">
-                          <input type="checkbox" />
-                          <span className="slider"></span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="border rounded-lg p-4">
-                    <h3 className="font-medium text-gray-700 mb-3">Security</h3>
-                    <div className="space-y-3">
-                      <button className="text-gray-700 hover:text-gray-900 font-medium">
-                        Change Password
-                      </button>
-                      <div className="block w-full h-px bg-gray-200"></div>
-                      <button className="text-gray-700 hover:text-gray-900 font-medium">
-                        Two-factor Authentication
-                      </button>
-                      <div className="block w-full h-px bg-gray-200"></div>
-                      <button className="text-gray-700 hover:text-gray-900 font-medium">
-                        Login History
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="border rounded-lg p-4">
-                    <h3 className="font-medium text-gray-700 mb-3">Privacy</h3>
-                    <div className="space-y-3">
-                      <button className="text-gray-700 hover:text-gray-900 font-medium">
-                        Privacy Settings
-                      </button>
-                      <div className="block w-full h-px bg-gray-200"></div>
-                      <button className="text-gray-700 hover:text-gray-900 font-medium">
-                        Data & Personalization
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="border rounded-lg p-4 bg-red-50">
-                    <h3 className="font-medium text-red-700 mb-3">Danger Zone</h3>
-                    <button className="text-red-700 hover:text-red-900 font-medium">
-                      Delete Account
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            {activeTab === "settings" && <SettingsTab />}
+            
           </div>
+        </div>
+        
+        {/* Mobile Sign Out Button */}
+        <div className="md:hidden mt-6 flex justify-center">
+          <button
+            onClick={handleLogout}
+            className="w-full max-w-xs px-4 py-3 border border-gray-200 rounded-lg text-center font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            Sign Out
+          </button>
         </div>
       </div>
 
@@ -454,8 +379,8 @@ export default function UserProfile() {
           left: 0;
           right: 0;
           bottom: 0;
-          background-color: #ccc;
-          transition: .4s;
+          background-color: #e2e8f0;
+          transition: .2s;
           border-radius: 24px;
         }
         
@@ -467,16 +392,26 @@ export default function UserProfile() {
           left: 3px;
           bottom: 3px;
           background-color: white;
-          transition: .4s;
+          transition: .2s;
           border-radius: 50%;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
         input:checked + .slider {
-          background-color: #4b5563;
+          background-color: #3b82f6;
         }
         
         input:checked + .slider:before {
           transform: translateX(20px);
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>

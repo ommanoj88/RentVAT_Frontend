@@ -1,40 +1,80 @@
+"use client";
+
+import { motion } from "framer-motion";
+
+interface HighlightItem {
+  icon: string;
+  title: string;
+  description: string;
+}
+
 export default function WhyRentingIsBest() {
-  const highlights = [
+  const highlights: HighlightItem[] = [
     {
-      icon: "/faq-icon.png",
+      icon: "/icons/faq-icon.svg", // Updated to SVG
       title: "Instant Answers",
       description: "Our FAQ covers everything—from bookings to returns, instantly.",
     },
     {
-      icon: "/globe-icon.png",
+      icon: "/icons/globe-icon.svg",
       title: "Global Sharing Network",
       description: "Join a community of trusted renters across multiple countries.",
     },
     {
-      icon: "/trophy-icon.png",
+      icon: "/icons/trophy-icon.svg",
       title: "Trending Rentals",
-      description: "See what’s popular and rent top-rated products with confidence.",
+      description: "See what's popular and rent top-rated products with confidence.",
     },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        staggerChildren: 0.2,
+        delayChildren: 0.3
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.5 } }
+  };
+
   return (
-    <section className="py-16 px-6 bg-white text-gray-900">
+    <section className="py-20 px-4 bg-white text-gray-900">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-3xl font-semibold text-center mb-8 text-orange-600">Why Renting is Best</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <h2 className="text-3xl font-bold text-center mb-12 text-orange-600">
+          Why Renting is Best
+        </h2>
+        
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+        >
           {highlights.map((item, index) => (
-            <div
+            <motion.div
               key={index}
-              className="p-6 bg-white border border-gray-300 rounded-xl shadow-lg hover:shadow-2xl transition-all"
+              className="p-6 bg-white border border-gray-100 rounded-xl shadow-md hover:shadow-xl transition-all duration-300"
+              variants={itemVariants}
             >
-              <div className="bg-orange-200 p-4 rounded-full mx-auto mb-4">
-                <img src={item.icon} alt={item.title} className="h-12 w-12 object-contain" />
+              <div className="bg-orange-100 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                <img src={item.icon} alt="" className="h-8 w-8" aria-hidden="true" />
               </div>
-              <h3 className="text-lg font-semibold text-center text-gray-800">{item.title}</h3>
-              <p className="text-gray-700 text-center mt-2">{item.description}</p>
-            </div>
+              <h3 className="text-xl font-semibold text-center text-gray-800 mb-3">
+                {item.title}
+              </h3>
+              <p className="text-gray-600 text-center">
+                {item.description}
+              </p>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

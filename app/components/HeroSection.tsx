@@ -5,7 +5,7 @@ import { auth } from "../firebase";
 import Logo from "./Logo";
 import LoginModal from "./LoginModal";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ChevronDown, Menu, X, LogOut, TrendingUp, Grid, Shield, Clock, Check } from "lucide-react";
+import { Search, ShoppingCart, Heart, Bell, Menu, X, LogOut, ChevronDown, MapPin, Shield, Check, Clock } from "lucide-react";
 
 export default function HeroSection() {
   const [query, setQuery] = useState("");
@@ -14,6 +14,8 @@ export default function HeroSection() {
   const [user, setUser] = useState<User | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  // New state for dropdown toggle
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -25,12 +27,27 @@ export default function HeroSection() {
       setScrolled(window.scrollY > 20);
     };
 
+    // Close dropdown when clicking outside
+    interface ClickOutsideEvent extends MouseEvent {
+      target: HTMLElement;
+    }
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (profileDropdownOpen && target && !target.closest('.profile-dropdown-container')) {
+        setProfileDropdownOpen(false);
+      }
+    };
+
     window.addEventListener("scroll", handleScroll);
+    document.addEventListener("mousedown", handleClickOutside);
+    
     return () => {
       unsubscribe();
       window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [profileDropdownOpen]);
 
   const handleSearch = () => {
     if (query.trim()) {
@@ -53,124 +70,186 @@ export default function HeroSection() {
     return user.displayName?.charAt(0) || user.email?.charAt(0) || "G";
   };
 
-  return (
-    <div className="relative text-white min-h-[50vh] flex flex-col justify-center items-center text-center overflow-hidden">
-      {/* Dynamic Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 overflow-hidden">
-        {/* Animated shapes */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-1/4 left-1/4 w-32 h-32 md:w-64 md:h-64 rounded-full bg-gray-400 blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/3 right-1/4 w-48 h-48 md:w-96 md:h-96 rounded-full bg-gray-500 blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
-          <div className="absolute top-2/3 left-1/3 w-40 h-40 md:w-80 md:h-80 rounded-full bg-gray-600 blur-3xl animate-pulse" style={{ animationDelay: "2s" }}></div>
-        </div>
-        {/* Subtle grid overlay */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA2MCAwIEwgMCAwIDAgNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iZ3JheSIgc3Ryb2tlLXdpZHRoPSIwLjUiIG9wYWNpdHk9IjAuMDUiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
-      </div>
+  // Toggle dropdown function
+  const toggleProfileDropdown = () => {
+    setProfileDropdownOpen(!profileDropdownOpen);
+  };
 
-      {/* Navigation Bar */}
+  return (
+    <div className="relative text-black flex flex-col justify-start items-center overflow-hidden">
+      {/* Navbar - Unique professional design */}
       <motion.nav 
-        className={`fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-3 sm:px-6 py-2 transition-all duration-300 ${
-          scrolled ? "bg-gray-900/95 backdrop-blur-md shadow-lg" : "bg-transparent"
+        className={`fixed top-0 left-0 right-0 z-50 flex flex-col transition-all duration-300 shadow-md ${
+          scrolled ? "bg-white" : "bg-white"
         }`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Logo />
-        
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-4 lg:space-x-6">
-          <div className="flex space-x-4 lg:space-x-6 text-sm font-medium">
-            <a href="#" className="hover:text-gray-300 transition duration-300 relative group">
-              How It Works
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-400 transition-all duration-300 group-hover:w-full"></span>
-            </a>
-            <a href="#" className="hover:text-gray-300 transition duration-300 relative group">
-              Guarantee
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-400 transition-all duration-300 group-hover:w-full"></span>
-            </a>
-            <a href="#" className="hover:text-gray-300 transition duration-300 relative group">
-              FAQs
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-400 transition-all duration-300 group-hover:w-full"></span>
-            </a>
-          </div>
-          
-          {user ? (
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-2 bg-gray-700/50 backdrop-blur-md rounded-full px-2 py-1">
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  className="w-7 h-7 bg-gradient-to-br from-gray-600 to-gray-400 text-white flex items-center justify-center rounded-full font-bold shadow-lg"
+        {/* Top Bar - Main Navigation */}
+        <div className="bg-white text-gray-800 py-0 px-3 sm:px-4 md:px-8 lg:px-16">
+
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            {/* Logo and Search Section */}
+            <div className="flex items-center space-x-3 md:space-x-6 flex-grow max-w-3xl">
+              <Logo />
+              
+              {/* Search Bar */}
+              <div className="hidden sm:flex flex-grow relative">
+                <input
+                  type="text"
+                  placeholder="Search for anything you want to rent..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
+                  className="w-full py-2 px-4 text-sm bg-gray-100 text-gray-800 outline-none rounded-l-sm border border-gray-300"
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                />
+                <button
+                  onClick={handleSearch}
+                  className="bg-emerald-500 hover:bg-emerald-600 px-3 py-2 text-white rounded-r-sm transition"
                 >
-                  {getUserInitial()}
-                </motion.div>
-                <span className="text-xs lg:text-sm font-medium pr-1">{user.displayName || user.email?.split('@')[0] || "Guest"}</span>
+                  <Search size={18} />
+                </button>
               </div>
+            </div>
+            
+            {/* Desktop Navigation Items */}
+            <div className="hidden md:flex items-center space-x-6">
+              {user ? (
+                <div className="flex items-center space-x-5">
+                  <button className="flex items-center space-x-1 hover:text-gray-600 transition">
+                    <Bell size={18} />
+                  </button>
+                  
+                  <button className="flex items-center space-x-1 hover:text-gray-600 transition">
+                    <Heart size={18} />
+                  </button>
+                  
+                  <button className="flex items-center space-x-1 hover:text-gray-600 transition">
+                    <ShoppingCart size={18} />
+                  </button>
+                  
+                  {/* Profile dropdown with onClick instead of hover */}
+                  <div className="profile-dropdown-container relative">
+                    <button 
+                      onClick={toggleProfileDropdown}
+                      className="flex items-center space-x-1 hover:text-gray-600 transition"
+                    >
+                      <div className="w-7 h-7 bg-indigo-600 text-white flex items-center justify-center rounded-full font-bold">
+                        {getUserInitial()}
+                      </div>
+                      <span className="hidden lg:inline text-sm font-medium">{user.displayName || user.email?.split('@')[0] || "Account"}</span>
+                      <ChevronDown size={14} className={profileDropdownOpen ? "transform rotate-180 transition-transform" : "transition-transform"} />
+                    </button>
+                    
+                    {/* Dropdown Menu - Using AnimatePresence for smooth animation */}
+                    <AnimatePresence>
+                      {profileDropdownOpen && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute right-0 w-48 bg-white shadow-lg rounded-lg mt-2 overflow-hidden z-50 transform origin-top-right text-gray-800"
+                        >
+                          <div className="py-1">
+                            <a href="#" className="block px-4 py-2 text-sm hover:bg-gray-100">Profile</a>
+                            <a href="#" className="block px-4 py-2 text-sm hover:bg-gray-100">My Rentals</a>
+                            <a href="#" className="block px-4 py-2 text-sm hover:bg-gray-100">My Listings</a>
+                            <a href="#" className="block px-4 py-2 text-sm hover:bg-gray-100">Settings</a>
+                            <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">
+                              Logout
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              ) : (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowLogin(true)}
+                  className="bg-indigo-100 text-indigo-600 px-5 py-1 rounded text-sm font-medium hover:bg-indigo-200 transition"
+                >
+                  Login
+                </motion.button>
+              )}
+              
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={handleLogout}
-                className="flex items-center space-x-1 text-xs bg-gray-700/50 hover:bg-gray-600/60 backdrop-blur-md px-2 py-1 rounded-full transition"
+                onClick={() => router.push("/createlisting")}
+                className="bg-emerald-500 hover:bg-emerald-600 px-5 py-1 rounded text-white font-medium transition text-sm flex items-center space-x-1"
               >
-                <LogOut size={12} />
-                <span>Logout</span>
+                <span>List Item</span>
               </motion.button>
             </div>
-          ) : (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowLogin(true)}
-              className="bg-gray-700/50 hover:bg-gray-600/60 backdrop-blur-md px-3 py-1 rounded-full text-xs lg:text-sm font-medium transition"
-            >
-              Login
-            </motion.button>
-          )}
-          
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => router.push("/createlisting")}
-            className="bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-500 hover:to-gray-400 px-3 py-1.5 rounded-full font-medium shadow-lg transition flex items-center space-x-1 text-xs lg:text-sm"
-          >
-            <span className="text-base font-bold">+</span>
-            <span>List Item</span>
-          </motion.button>
+            
+            {/* Mobile Navigation Controls - Enhanced for better mobile appearance */}
+            <div className="flex items-center space-x-3 md:hidden">
+              <button
+                onClick={() => router.push("/cart")}
+                className="relative p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                <ShoppingCart size={18} className="text-gray-700" />
+                <span className="absolute -top-1 -right-1 bg-indigo-600 text-white w-4 h-4 rounded-full text-xs flex items-center justify-center">0</span>
+              </button>
+              
+              {user ? (
+                <button 
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  className="w-8 h-8 bg-indigo-600 text-white flex items-center justify-center rounded-full font-bold shadow-md"
+                >
+                  {getUserInitial()}
+                </button>
+              ) : (
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowLogin(true)}
+                  className="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-md text-xs font-medium shadow-sm hover:bg-indigo-200 transition"
+                >
+                  Login
+                </motion.button>
+              )}
+              
+              <motion.button 
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                aria-label="Toggle Menu"
+              >
+                {menuOpen ? <X size={18} className="text-gray-700" /> : <Menu size={18} className="text-gray-700" />}
+              </motion.button>
+            </div>
+          </div>
         </div>
         
-        {/* Mobile Navigation Controls */}
-        <div className="flex items-center space-x-2 md:hidden">
-          {user ? (
-            <div className="flex items-center space-x-2">
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                className="w-7 h-7 bg-gradient-to-br from-gray-600 to-gray-400 text-white flex items-center justify-center rounded-full font-bold shadow-lg"
-              >
-                {getUserInitial()}
-              </motion.div>
-            </div>
-          ) : (
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowLogin(true)}
-              className="text-white text-xs bg-gray-700/50 px-2 py-1 rounded-full"
+        {/* Mobile Search Bar - Enhanced with better styling */}
+        <div className="bg-white border-t border-gray-200 px-3 pb-2 pt-1 flex md:hidden">
+          <div className="relative flex w-full">
+            <input
+              type="text"
+              placeholder="Search for products and more"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full py-2 px-3 text-sm bg-gray-100 text-gray-800 outline-none rounded-l-md border border-gray-200"
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            />
+            <button
+              onClick={handleSearch}
+              className="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 text-white rounded-r-md transition shadow-sm"
             >
-              Login
-            </motion.button>
-          )}
-          
-          <motion.button 
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="text-white p-1 rounded-full bg-gray-700/50 backdrop-blur-md"
-            aria-label="Toggle Menu"
-          >
-            {menuOpen ? <X size={18} /> : <Menu size={18} />}
-          </motion.button>
+              <Search size={16} />
+            </button>
+          </div>
         </div>
       </motion.nav>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu Overlay - Enhanced with better styling */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div 
@@ -178,36 +257,94 @@ export default function HeroSection() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed top-12 left-0 right-0 bg-gray-900/95 backdrop-blur-lg z-40 md:hidden shadow-xl border-t border-gray-800"
+            className="fixed top-16 sm:top-16 left-0 right-0 bg-white z-40 md:hidden shadow-xl border-t border-gray-200"
           >
-            <div className="flex flex-col p-3 space-y-1.5">
-              <a href="#" className="py-1.5 px-3 hover:bg-gray-800/70 rounded-lg flex items-center space-x-2 transition text-sm">
-                <span>How It Works</span>
+            <div className="flex flex-col p-4">
+              {!user && (
+                <div className="mb-4 flex justify-between items-center bg-indigo-50 p-3 rounded-lg">
+                  <span className="text-gray-600 text-sm">New customer?</span>
+                  <button 
+                    onClick={() => {
+                      setShowLogin(true);
+                      setMenuOpen(false);
+                    }}
+                    className="text-indigo-600 font-medium text-sm bg-white px-3 py-1 rounded-md shadow-sm"
+                  >
+                    Sign Up
+                  </button>
+                </div>
+              )}
+              
+              {user && (
+                <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg mb-4 shadow-sm">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-indigo-600 text-white flex items-center justify-center rounded-full font-bold shadow-md">
+                      {getUserInitial()}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">{user.displayName || user.email?.split('@')[0] || "User"}</p>
+                      <p className="text-xs text-gray-500">{user.email}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <a href="#" className="py-3 border-b border-gray-100 flex items-center justify-between hover:bg-gray-50 rounded-md px-2">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                    <ShoppingCart size={16} className="text-indigo-600" />
+                  </div>
+                  <span className="font-medium">My Rentals</span>
+                </div>
+                <ChevronDown size={16} className="text-gray-500 transform -rotate-90" />
               </a>
-              <a href="#" className="py-1.5 px-3 hover:bg-gray-800/70 rounded-lg flex items-center space-x-2 transition text-sm">
-                <span>Guarantee</span>
+              
+              <a href="#" className="py-3 border-b border-gray-100 flex items-center justify-between hover:bg-gray-50 rounded-md px-2">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center">
+                    <Heart size={16} className="text-pink-600" />
+                  </div>
+                  <span className="font-medium">Wishlist</span>
+                </div>
+                <ChevronDown size={16} className="text-gray-500 transform -rotate-90" />
               </a>
-              <a href="#" className="py-1.5 px-3 hover:bg-gray-800/70 rounded-lg flex items-center space-x-2 transition text-sm">
-                <span>FAQs</span>
+              
+              <a href="#" className="py-3 border-b border-gray-100 flex items-center justify-between hover:bg-gray-50 rounded-md px-2">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Bell size={16} className="text-blue-600" />
+                  </div>
+                  <span className="font-medium">Notifications</span>
+                </div>
+                <ChevronDown size={16} className="text-gray-500 transform -rotate-90" />
               </a>
+              
               <button
                 onClick={() => {
                   router.push("/createlisting");
                   setMenuOpen(false);
                 }}
-                className="py-1.5 px-3 bg-gradient-to-r from-gray-600 to-gray-500 rounded-lg flex items-center space-x-2 transition text-left text-sm"
+                className="py-3 border-b border-gray-100 flex items-center justify-between hover:bg-gray-50 rounded-md px-2"
               >
-                <span className="text-base font-bold">+</span>
-                <span>List Item</span>
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <span className="text-emerald-600 text-xl font-bold">+</span>
+                  </div>
+                  <span className="font-medium">List an Item</span>
+                </div>
+                <ChevronDown size={16} className="text-gray-500 transform -rotate-90" />
               </button>
               
               {user && (
                 <button
-                  onClick={handleLogout}
-                  className="py-1.5 px-3 hover:bg-gray-800/70 rounded-lg flex items-center space-x-2 transition text-left text-sm"
+                  onClick={() => {
+                    handleLogout();
+                    setMenuOpen(false);
+                  }}
+                  className="mt-3 py-2 flex items-center justify-center space-x-2 text-white bg-red-500 hover:bg-red-600 rounded-md shadow-sm transition"
                 >
                   <LogOut size={16} />
-                  <span>Logout</span>
+                  <span className="font-medium">Logout</span>
                 </button>
               )}
             </div>
@@ -215,164 +352,121 @@ export default function HeroSection() {
         )}
       </AnimatePresence>
 
-      {/* Hero Content - Smaller and More Compact */}
-      <motion.div 
-        className="mt-14 pt-2 sm:pt-4 w-full max-w-4xl mx-auto px-3 sm:px-4 z-10"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <motion.h1 
-          className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-white"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          Rent Smarter, <span className="text-gray-300">Save More</span>
-        </motion.h1>
-        
-        <motion.p 
-          className="text-xs sm:text-sm md:text-base mt-1.5 sm:mt-2 text-gray-300 max-w-xl mx-auto"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          Access anything, anytime—without the commitment of buying.
-        </motion.p>
+      {/* Main Hero Content - Unique Professional Style */}
+      <div className="pt-32 sm:pt-36 md:pt-32 w-full">
 
-        {/* Search Bar - More Compact */}
+      {/* Main Hero Banner */}
         <motion.div 
-          className={`mt-4 sm:mt-6 relative max-w-2xl mx-auto ${searchFocused ? "scale-102" : ""} transition-all duration-300`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
+          className="bg-gradient-to-br from-gray-50 to-indigo-50 w-full"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-700 to-gray-500 rounded-lg blur-sm opacity-50"></div>
-          <div className="bg-gray-800/60 backdrop-blur-md rounded-lg flex items-center p-1 relative shadow-lg">
-            <div className="flex-grow flex items-center pl-2">
-              <Search size={16} className="text-gray-400" />
-              <input
-                type="text"
-                placeholder="What would you like to rent today?"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-                className="flex-grow py-1.5 px-2 text-xs sm:text-sm bg-transparent outline-none placeholder-gray-400 text-white ml-1"
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              />
+          <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-12">
+            <div className="flex flex-col md:flex-row items-center">
+              <div className="w-full md:w-1/2 md:pr-8 text-center md:text-left">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 sm:mb-3">
+                  Rent <span className="text-indigo-600">Almost Anything</span> at Your Fingertips
+                </h1>
+                <p className="text-gray-600 text-sm sm:text-base mb-4 sm:mb-6">
+                  Access premium products from trusted owners. Save money, reduce waste, and enjoy more with less commitment.
+                </p>
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 mb-4 justify-center md:justify-start">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-5 rounded-lg font-medium text-sm shadow-md"
+                    onClick={() => router.push("/browse")}
+                  >
+                    Browse Items
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white py-2 px-5 rounded-lg font-medium text-sm shadow-md"
+                    onClick={() => router.push("/createlisting")}
+                  >
+                    List an Item
+                  </motion.button>
+                </div>
+                <div className="flex items-center justify-center md:justify-start space-x-4 mt-2">
+                  <div className="flex items-center space-x-1">
+                    <MapPin size={14} className="text-indigo-600" />
+                    <select className="bg-transparent text-xs text-gray-800 font-medium border-none outline-none cursor-pointer">
+                      <option>New York</option>
+                      <option>San Francisco</option>
+                      <option>Los Angeles</option>
+                      <option>Chicago</option>
+                    </select>
+                  </div>
+                  <div className="h-4 w-px bg-gray-300"></div>
+                  <span className="text-xs text-indigo-600 font-medium">1000+ Items Near You</span>
+                </div>
+              </div>
+              <div className="w-full md:w-1/2 mt-6 md:mt-0">
+                <div className="relative">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg blur opacity-20"></div>
+                  <img 
+                    src="/api/placeholder/600/400" 
+                    alt="Rental marketplace" 
+                    className="rounded-lg shadow-lg w-full h-auto object-cover relative" 
+                  />
+                </div>
+              </div>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleSearch}
-              className="bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-500 hover:to-gray-400 px-3 py-1.5 text-white font-medium rounded-lg transition shadow-md flex items-center space-x-1 text-xs sm:text-sm"
-            >
-              <span>Search</span>
-              <ChevronDown size={12} className="transform rotate-270" />
-            </motion.button>
           </div>
-        </motion.div>
-
-        {/* Feature Cards - Mobile Friendly Grid */}
-        <motion.div 
-          className="mt-4 sm:mt-6 grid grid-cols-2 gap-2 sm:gap-3 max-w-lg mx-auto"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-        >
-          <motion.button 
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="bg-gray-800/60 backdrop-blur-md hover:bg-gray-700/60 p-2 sm:p-3 rounded-lg text-left transition flex flex-col items-center justify-center space-y-1 sm:space-y-2 border border-gray-700/50 shadow-md h-16 sm:h-20"
-          >
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-br from-gray-500 to-gray-400 flex items-center justify-center shadow-md">
-              <Grid size={14} />
-            </div>
-            <div className="text-center">
-              <h3 className="font-medium text-xs sm:text-sm">Explore Categories</h3>
-            </div>
-          </motion.button>
-          
-          <motion.button 
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="bg-gray-800/60 backdrop-blur-md hover:bg-gray-700/60 p-2 sm:p-3 rounded-lg text-left transition flex flex-col items-center justify-center space-y-1 sm:space-y-2 border border-gray-700/50 shadow-md h-16 sm:h-20"
-          >
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-br from-gray-500 to-gray-400 flex items-center justify-center shadow-md">
-              <TrendingUp size={14} />
-            </div>
-            <div className="text-center">
-              <h3 className="font-medium text-xs sm:text-sm">Trending Items</h3>
-            </div>
-          </motion.button>
-          
-          <motion.button 
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="bg-gray-800/60 backdrop-blur-md hover:bg-gray-700/60 p-2 sm:p-3 rounded-lg text-left transition flex flex-col items-center justify-center space-y-1 sm:space-y-2 border border-gray-700/50 shadow-md h-16 sm:h-20"
-          >
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-br from-gray-500 to-gray-400 flex items-center justify-center shadow-md">
-              <Shield size={14} />
-            </div>
-            <div className="text-center">
-              <h3 className="font-medium text-xs sm:text-sm">Insurance</h3>
-            </div>
-          </motion.button>
-          
-          <motion.button 
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="bg-gray-800/60 backdrop-blur-md hover:bg-gray-700/60 p-2 sm:p-3 rounded-lg text-left transition flex flex-col items-center justify-center space-y-1 sm:space-y-2 border border-gray-700/50 shadow-md h-16 sm:h-20"
-          >
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-br from-gray-500 to-gray-400 flex items-center justify-center shadow-md">
-              <Clock size={14} />
-            </div>
-            <div className="text-center">
-              <h3 className="font-medium text-xs sm:text-sm">24/7 Support</h3>
-            </div>
-          </motion.button>
         </motion.div>
         
-        {/* Trust Badges - More Compact */}
-        <motion.div 
-          className="mt-4 sm:mt-6 max-w-lg mx-auto px-2 sm:px-4 flex flex-wrap justify-center gap-2"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-        >
-          <div className="bg-gray-800/50 backdrop-blur-sm px-2 py-0.5 rounded-full flex items-center space-x-1">
-            <Check size={10} className="text-gray-400" />
-            <span className="text-xs text-gray-300">Verified Rentals</span>
+        {/* Trust Markers Section */}
+        <div className="bg-white py-6 border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex flex-wrap justify-between gap-y-4">
+              <div className="flex items-center space-x-2 w-1/2 sm:w-auto">
+                <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center shadow-sm">
+                  <Shield size={20} className="text-indigo-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-sm text-gray-800">100% Insured</p>
+                  <p className="text-xs text-gray-500">All rentals covered</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2 w-1/2 sm:w-auto">
+                <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center shadow-sm">
+                  <Check size={20} className="text-emerald-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-sm text-gray-800">Verified Owners</p>
+                  <p className="text-xs text-gray-500">ID verified renters</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2 w-1/2 sm:w-auto">
+                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center shadow-sm">
+                  <Bell size={20} className="text-purple-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-sm text-gray-800">24/7 Support</p>
+                  <p className="text-xs text-gray-500">Help when you need it</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2 w-1/2 sm:w-auto">
+                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shadow-sm">
+                  <Clock size={20} className="text-amber-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-sm text-gray-800">Flexible Timing</p>
+                  <p className="text-xs text-gray-500">Rent on your schedule</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="bg-gray-800/50 backdrop-blur-sm px-2 py-0.5 rounded-full flex items-center space-x-1">
-            <Check size={10} className="text-gray-400" />
-            <span className="text-xs text-gray-300">100% Insured</span>
-          </div>
-          <div className="bg-gray-800/50 backdrop-blur-sm px-2 py-0.5 rounded-full flex items-center space-x-1">
-            <Check size={10} className="text-gray-400" />
-            <span className="text-xs text-gray-300">No Hidden Fees</span>
-          </div>
-        </motion.div>
-      </motion.div>
-
-      {/* Decorative Bottom Gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-16 sm:h-24 bg-gradient-to-t from-gray-900 to-transparent"></div>
+        </div>
+      </div>
 
       {/* Login Modal */}
       <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
-
-      {/* Add framer-motion animation keyframes */}
-      <style jsx>{`
-        @keyframes pulse {
-          0% { opacity: 0.3; transform: scale(1); }
-          50% { opacity: 0.4; transform: scale(1.03); }
-          100% { opacity: 0.3; transform: scale(1); }
-        }
-        .animate-pulse {
-          animation: pulse 8s infinite ease-in-out;
-        }
-      `}</style>
     </div>
   );
 }

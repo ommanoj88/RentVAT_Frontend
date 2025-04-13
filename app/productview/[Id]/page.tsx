@@ -8,6 +8,7 @@ import SearchHeroSection from '../../components/SearchHeroSection';
 import Image from 'next/image';
 import Link from 'next/link';
 import { use } from 'react';
+import { auth } from "../../firebase";
 
 
 type Listing = {
@@ -202,27 +203,37 @@ const isEndDate = (day: number) => {
   return currentDate.getTime() === endDate.getTime();
 };
 const handleRequestToRent = async () => {
-  if (!startDate || !endDate || !listing) return;
-
-  // Replace this with the actual token from your authentication system
-  const token = localStorage.getItem('authToken'); // Example: Retrieve token from localStorage
-  if (!token) {
-    alert('You must be logged in to make a booking.');
+  if (!startDate || !endDate || !listing) {
+    alert("Please select valid dates and ensure the listing is loaded.");
     return;
   }
 
-  const requestData = {
-    listingId: listing.id,
-    renterId: listing.owner.id, // Replace with the actual renter ID from the authenticated user
-    startDate: startDate.toISOString().split('T')[0], // Format as YYYY-MM-DD
-    endDate: endDate.toISOString().split('T')[0],     // Format as YYYY-MM-DD
-  };
+  // Check if the user is logged in using Firebase auth
+  const user = auth.currentUser;
+  if (!user) {
+    alert("You must be logged in to make a booking.");
+    return;
+  }
 
   try {
-    const response = await fetch('http://localhost:8080/api/bookings/create', {
-      method: 'POST',
+    // Retrieve the token from Firebase
+    const token = await user.getIdToken();
+    console.log("Token being sent:", token);
+
+    // Use the numeric renterId from the backend (e.g., listing.owner.id)
+    const renterId = listing.owner.id; // Ensure this is the numeric ID of the renter
+
+    const requestData = {
+      listingId: listing.id,
+      renterId: renterId, // Use the numeric renterId
+      startDate: startDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
+      endDate: endDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
+    };
+
+    const response = await fetch("http://localhost:8080/api/bookings/create", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`, // Include the token in the Authorization header
       },
       body: JSON.stringify(requestData),
@@ -230,19 +241,24 @@ const handleRequestToRent = async () => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to send booking request');
+      throw new Error(errorData.message || "Failed to send booking request");
     }
 
     const data = await response.json();
-    alert(`Booking request submitted successfully! ${data}`);
-    console.log(data);
+    alert(`Booking request submitted successfully! Details: ${data}`);
+    console.log("Booking response:", data);
+
+    
+    // Optionally, reset the selected dates after successful booking
+    setStartDate(null);
+    setEndDate(null);
   } catch (error) {
     if (error instanceof Error) {
-      console.error('Error:', error.message);
+      console.error("Error:", error.message);
       alert(`Failed to send booking request. ${error.message}`);
     } else {
-      console.error('Unexpected error:', error);
-      alert('An unexpected error occurred.');
+      console.error("Unexpected error:", error);
+      alert("An unexpected error occurred.");
     }
   }
 };
@@ -623,7 +639,7 @@ const renderCalendar = () => {
         </div>
 
         {/* Similar Listings Section */}
-        <motion.div 
+        {/* <motion.div 
           className="mt-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -649,7 +665,7 @@ const renderCalendar = () => {
               </div>
             ))}
           </div>
-        </motion.div>
+        </motion.div> */}
       </motion.div>
 
       {/* Footer */}
