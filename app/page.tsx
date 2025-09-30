@@ -15,12 +15,26 @@ const API_URL = "http://localhost:8080/api/search/listings?page=0&size=10";
 
 export default function Home() {
   const [listings, setListings] = useState<ListingsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
+    setLoading(true);
     fetch(API_URL, { cache: "no-store" })
-      .then((res) => res.json())
-      .then(setListings);
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch listings');
+        return res.json();
+      })
+      .then((data) => {
+        setListings(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Error fetching listings:', err);
+        setError(err.message);
+        setLoading(false);
+      });
   }, []);
 
   const userId = user?.uid; // ✅ real user ID from Firebase
@@ -37,14 +51,22 @@ export default function Home() {
         </h1>
 
         <div className="w-full overflow-x-auto scrollbar-hide mt-4 px-6">
-  <div className="flex space-x-4 w-max">
-    {listings?.content.map((listing) => (
-      <div key={listing.id} className="w-80 inline-block">
-        <ListingCard listing={listing} />
-      </div>
-    ))}
-  </div>
-</div>
+          <div className="flex space-x-4 w-max">
+            {loading ? (
+              <p className="text-gray-600">Loading listings...</p>
+            ) : error ? (
+              <p className="text-red-600">Error loading listings: {error}</p>
+            ) : listings?.content && listings.content.length > 0 ? (
+              listings.content.map((listing) => (
+                <div key={listing.id} className="w-80 inline-block">
+                  <ListingCard listing={listing} />
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-600">No listings available</p>
+            )}
+          </div>
+        </div>
       </div>
 
       <WhyRentingIsBest />

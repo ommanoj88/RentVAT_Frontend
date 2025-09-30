@@ -49,13 +49,8 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
       let userCredential;
 
       if (isSignUp) {
-        userCredential = await createUserWithEmailAndPassword(
-          auth,
-          loginForm.email,
-          loginForm.password
-        );
-
-        await fetch("/api/auth/register", {
+        // First, register the user in the backend (which also creates Firebase user)
+        const registerResponse = await fetch("http://localhost:8080/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -64,6 +59,18 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             username: loginForm.email.split("@")[0],
           }),
         });
+
+        if (!registerResponse.ok) {
+          const errorText = await registerResponse.text();
+          throw new Error(errorText || "Registration failed");
+        }
+
+        // Then sign in with Firebase to get the user credential
+        userCredential = await signInWithEmailAndPassword(
+          auth,
+          loginForm.email,
+          loginForm.password
+        );
       } else {
         userCredential = await signInWithEmailAndPassword(
           auth,
@@ -74,11 +81,16 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
       const token = await userCredential.user.getIdToken();
 
-      await fetch("/api/auth/login", {
+      // Verify token with backend (this will create user in DB if doesn't exist for login)
+      const loginResponse = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),
       });
+
+      if (!loginResponse.ok) {
+        throw new Error("Backend authentication failed");
+      }
 
       onClose();
       window.location.href = "/";
