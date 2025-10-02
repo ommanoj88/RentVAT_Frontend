@@ -6,7 +6,7 @@ import Footer from "../components/Footer";
 import { Listing } from "../types/Listings";
 import SearchHeroSection from "../components/SearchHeroSection";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
 export default function SearchPage() {
   const searchParams = useSearchParams();

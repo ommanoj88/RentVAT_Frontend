@@ -1,4 +1,35 @@
+import Link from "next/link";
+
 export default function Footer() {
+  const rentVATLinks = [
+    { name: "About Us", href: "/about" },
+    { name: "Culture", href: "/culture" },
+    { name: "Investors", href: "/investors" },
+    { name: "Careers", href: "/careers" },
+    { name: "Contact", href: "/contact" }
+  ];
+
+  const benefitsLinks = [
+    { name: "Sitemap", href: "/sitemap" },
+    { name: "B2B - RentVAT for Business", href: "/b2b" }
+  ];
+
+  const informationLinks = [
+    { name: "Blog", href: "/blog" },
+    { name: "Support Home", href: "/support" },
+    { name: "Documents Required", href: "/support#documents" },
+    { name: "Annual Returns", href: "/support#returns" }
+  ];
+
+  const policiesLinks = [
+    { name: "Shipping Policy", href: "/shipping" },
+    { name: "Cancellation & Return", href: "/cancellation" },
+    { name: "Privacy Policy", href: "/privacy" },
+    { name: "CSR Policy", href: "/csr" },
+    { name: "Rental Terms", href: "/terms" },
+    { name: "Referral Terms", href: "/referral" }
+  ];
+
   return (
     <footer className="w-full bg-gray-100 text-gray-800 py-8 px-4 sm:px-6 mt-10">
       <div className="max-w-6xl mx-auto">
@@ -8,9 +39,9 @@ export default function Footer() {
           <div className="col-span-1">
             <h2 className="font-bold text-lg text-gray-900 mb-2">RentVAT</h2>
             <ul className="space-y-1">
-              {["About Us", "Culture", "Investors", "Careers", "Contact"].map((item) => (
-                <li key={item} className="hover:text-blue-600 transition-colors cursor-pointer text-sm">
-                  <a href="#" className="block py-1">{item}</a>
+              {rentVATLinks.map((item) => (
+                <li key={item.name} className="hover:text-blue-600 transition-colors cursor-pointer text-sm">
+                  <Link href={item.href} className="block py-1">{item.name}</Link>
                 </li>
               ))}
             </ul>
@@ -20,9 +51,9 @@ export default function Footer() {
           <div className="col-span-1">
             <h2 className="font-bold text-lg text-gray-900 mb-2">Benefits</h2>
             <ul className="space-y-1">
-              {["Sitemap", "B2B - RentVAT for Business"].map((item) => (
-                <li key={item} className="hover:text-blue-600 transition-colors cursor-pointer text-sm">
-                  <a href="#" className="block py-1">{item}</a>
+              {benefitsLinks.map((item) => (
+                <li key={item.name} className="hover:text-blue-600 transition-colors cursor-pointer text-sm">
+                  <Link href={item.href} className="block py-1">{item.name}</Link>
                 </li>
               ))}
             </ul>
@@ -32,9 +63,9 @@ export default function Footer() {
           <div className="col-span-1">
             <h2 className="font-bold text-lg text-gray-900 mb-2">Information</h2>
             <ul className="space-y-1">
-              {["Blog", "Support Home", "Documents Required", "Annual Returns"].map((item) => (
-                <li key={item} className="hover:text-blue-600 transition-colors cursor-pointer text-sm">
-                  <a href="#" className="block py-1">{item}</a>
+              {informationLinks.map((item) => (
+                <li key={item.name} className="hover:text-blue-600 transition-colors cursor-pointer text-sm">
+                  <Link href={item.href} className="block py-1">{item.name}</Link>
                 </li>
               ))}
             </ul>
@@ -44,16 +75,9 @@ export default function Footer() {
           <div className="col-span-1">
             <h2 className="font-bold text-lg text-gray-900 mb-2">Policies</h2>
             <ul className="space-y-1">
-              {[
-                "Shipping Policy",
-                "Cancellation & Return",
-                "Privacy Policy",
-                "CSR Policy",
-                "Rental Terms",
-                "Referral Terms"
-              ].map((item) => (
-                <li key={item} className="hover:text-blue-600 transition-colors cursor-pointer text-sm">
-                  <a href="#" className="block py-1">{item}</a>
+              {policiesLinks.map((item) => (
+                <li key={item.name} className="hover:text-blue-600 transition-colors cursor-pointer text-sm">
+                  <Link href={item.href} className="block py-1">{item.name}</Link>
                 </li>
               ))}
             </ul>

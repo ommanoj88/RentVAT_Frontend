@@ -34,31 +34,43 @@ export default function UserProfile() {
 
   useEffect(() => {
     if (!user) {
-      // router.push("/login");
+      router.push("/");
       return;
     }
-  
+
     setLoading(true);
-    
-    // Fetch user's listings
-    fetch(`http://localhost:8080/api/listings/user/3`, { cache: "no-store" })
-    .then((res) => res.json())
-    .then((data) => {
-      console.log("User Listings Response:", data);
-      setUserListings(data);
-    })
-    .catch((error) => console.error("Error fetching user listings:", error))
-    .finally(() => setLoading(false));
-  
-    // Fetch items the user is renting
-    fetch(`http://localhost:8080/api/listings/user/3`, { cache: "no-store" })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Rented Items Response:", data);
-        setRentedItems(data.content);
-      })
-      .catch((error) => console.error("Error fetching rented items:", error));
-  
+
+    // Fetch user's listings using actual user ID
+    const fetchUserData = async () => {
+      try {
+        const token = await user.getIdToken();
+
+        // Fetch user's listings
+        const listingsRes = await fetch(`http://localhost:8080/api/listings/user/${user.uid}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          cache: "no-store"
+        });
+
+        if (listingsRes.ok) {
+          const listingsData = await listingsRes.json();
+          console.log("User Listings Response:", listingsData);
+          setUserListings(listingsData);
+        }
+
+        // Fetch items the user is renting - placeholder for now
+        // You would need to create an endpoint for user's rented items
+        setRentedItems(null);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+
     // Update profile data
     setProfileData((prev) => ({
       ...prev,
@@ -286,7 +298,7 @@ export default function UserProfile() {
                   </div>
                   <p className="text-gray-600 mb-4">You don't have any listings yet</p>
                   <button
-                    onClick={() => router.push("/create-listing")}
+                    onClick={() => router.push("/createlisting")}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-medium transition-colors inline-flex items-center gap-2"
                   >
                     Create Your First Listing

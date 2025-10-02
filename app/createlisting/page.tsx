@@ -97,13 +97,52 @@ const CreateListingPage = () => {
 
   const validateForm = (): { [key: string]: string } => {
     const newErrors: { [key: string]: string } = {};
-    if (!formData.title) newErrors.title = "Title is required";
-    if (!formData.description) newErrors.description = "Description is required";
-    if (!formData.address) newErrors.address = "Address is required";
-    if (!formData.city) newErrors.city = "City is required";
+
+    // ✅ Enhanced validation
+    if (!formData.title || formData.title.trim().length === 0) {
+      newErrors.title = "Title is required";
+    } else if (formData.title.length < 5) {
+      newErrors.title = "Title must be at least 5 characters";
+    } else if (formData.title.length > 100) {
+      newErrors.title = "Title must be less than 100 characters";
+    }
+
+    if (!formData.description || formData.description.trim().length === 0) {
+      newErrors.description = "Description is required";
+    } else if (formData.description.length < 20) {
+      newErrors.description = "Description must be at least 20 characters";
+    }
+
+    if (!formData.address || formData.address.trim().length === 0) {
+      newErrors.address = "Address is required";
+    }
+
+    if (!formData.city || formData.city.trim().length === 0) {
+      newErrors.city = "City is required";
+    }
+
+    // ✅ Price validation
     if (!formData.price1Day || isNaN(Number(formData.price1Day))) {
       newErrors.price1Day = "Valid price for 1 day is required";
+    } else if (Number(formData.price1Day) <= 0) {
+      newErrors.price1Day = "Price must be greater than 0";
+    } else if (Number(formData.price1Day) > 100000) {
+      newErrors.price1Day = "Price seems unreasonably high";
     }
+
+    // ✅ Validate optional prices if provided
+    if (formData.price3Days && Number(formData.price3Days) > 0) {
+      if (Number(formData.price3Days) < Number(formData.price1Day)) {
+        newErrors.price3Days = "3-day price should not be less than 1-day price";
+      }
+    }
+
+    if (formData.price7Days && Number(formData.price7Days) > 0) {
+      if (Number(formData.price7Days) < Number(formData.price1Day)) {
+        newErrors.price7Days = "7-day price should not be less than 1-day price";
+      }
+    }
+
     return newErrors;
   };
 

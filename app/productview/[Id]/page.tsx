@@ -137,10 +137,11 @@ const ProductPage = ({ params }: { params: Promise<{ Id: string }> }) => {
     }
   };
 
-// Initialize tomorrow
+// Initialize tomorrow - FIXED: Actually set to tomorrow
 const today = new Date();
+today.setHours(0, 0, 0, 0); // Reset time to start of day
 const tomorrow = new Date(today);
-tomorrow.setDate(today.getDate() );
+tomorrow.setDate(today.getDate() + 1); // ✅ Fixed: Add 1 day
 
 // Calendar functions
 const getDaysInMonth = (year: number, month: number) => {
@@ -215,17 +216,27 @@ const handleRequestToRent = async () => {
     return;
   }
 
+  // ✅ FIXED: Validate dates before sending
+  if (endDate <= startDate) {
+    alert("End date must be after start date.");
+    return;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (startDate <= today) {
+    alert("Start date must be in the future.");
+    return;
+  }
+
   try {
     // Retrieve the token from Firebase
     const token = await user.getIdToken();
     console.log("Token being sent:", token);
 
-    // Use the numeric renterId from the backend (e.g., listing.owner.id)
-    const renterId = listing.owner.id; // Ensure this is the numeric ID of the renter
-
+    // ✅ FIXED: Remove renterId - backend will get it from the authenticated user token
     const requestData = {
       listingId: listing.id,
-      renterId: renterId, // Use the numeric renterId
       startDate: startDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
       endDate: endDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
     };
@@ -234,31 +245,50 @@ const handleRequestToRent = async () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(requestData),
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to send booking request");
+      // ✅ Improved error handling - extract text or JSON
+      let errorMessage = "Failed to send booking request";
+      try {
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData;
+        } else {
+          errorMessage = await response.text();
+        }
+      } catch (e) {
+        errorMessage = `Server error: ${response.status} ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
     }
 
-    const data = await response.json();
-    alert(`Booking request submitted successfully! Details: ${data}`);
-    console.log("Booking response:", data);
+    // ✅ Handle both text and JSON responses
+    const contentType = response.headers.get("content-type");
+    let responseData;
+    if (contentType && contentType.includes("application/json")) {
+      responseData = await response.json();
+    } else {
+      responseData = await response.text();
+    }
 
-    
-    // Optionally, reset the selected dates after successful booking
+    alert(`Booking request submitted successfully!\n\n${responseData}`);
+    console.log("Booking response:", responseData);
+
+    // Reset the selected dates after successful booking
     setStartDate(null);
     setEndDate(null);
   } catch (error) {
     if (error instanceof Error) {
       console.error("Error:", error.message);
-      alert(`Failed to send booking request. ${error.message}`);
+      alert(`❌ Booking Failed\n\n${error.message}`);
     } else {
       console.error("Unexpected error:", error);
-      alert("An unexpected error occurred.");
+      alert("An unexpected error occurred. Please try again.");
     }
   }
 };
